@@ -1,8 +1,9 @@
+const bcrypt = require('bcryptjs');
 const User = require('../../model/User/User');
-
 
 const userRegister = async (req, res) => {
   const { firstname, lastname, profilePhoto, email, password } = req.body;
+  console.log(password);
 
   try {
     // Check if email exists
@@ -15,13 +16,17 @@ const userRegister = async (req, res) => {
     }
 
     // hash password
+    const salt = await bcrypt.genSalt(10);
+    console.log('Password: ' + password + ' is type of ' + typeof (password));
+    console.log('SALT: ' + salt + ' is type of ' + typeof (salt));
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create the User
     const user = await User.create({
       firstname,
       lastname,
       email,
-      password
+      password: hashedPassword
     })
     res.json({
       status: 'success',
@@ -33,10 +38,29 @@ const userRegister = async (req, res) => {
 }
 
 const userLogin = async (req, res) => {
+  const { email, password } = req.body
   try {
+    // Check if email exists
+    const userFound = await User.findOne({ email });
+    
+    if (!userFound) {
+      return res.json({
+        msg: "Invalid login credentials."
+      })
+    }
+
+    // Verify user password
+    const isPasswordMatched = await bcrypt.compare(password, userFound.password);
+
+    if (!isPasswordMatched) {
+      return res.json({
+        msg: "Invalid login credentials."
+      })
+    }
+
     res.json({
       status: 'Success',
-      data: 'User logged in'
+      data: userFound
     })
   } catch (error) {
     res.json(error.message);
