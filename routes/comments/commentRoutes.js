@@ -3,6 +3,14 @@ const express = require('express');
 const commentRouter = express.Router();
 
 
+const {
+  createComment,
+  getComment,
+  deleteComment,
+  updateComment
+} = require('../../controllers/comments/commentController');
+
+
 // POST 
 commentRouter.post('', createComment);
 // GET /:id

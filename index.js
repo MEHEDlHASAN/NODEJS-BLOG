@@ -10,6 +10,7 @@ const categoryRouter = require('./routes/categories/categoryRoutes');
 
 const app = express();
 
+app.use(express.json())  // pass incoming payload
 // middleware
 
 // routes
