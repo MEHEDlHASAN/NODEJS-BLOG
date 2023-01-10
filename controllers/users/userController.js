@@ -1,5 +1,8 @@
 const bcrypt = require('bcryptjs');
 const User = require('../../model/User/User');
+const generateToken = require('../../utils/generateToken');
+const getTokenFromHeader = require('../../utils/getTokenFromHeader');
+const isLogin = require('../../middlewares/isLogin');
 
 const userRegister = async (req, res) => {
   const { firstname, lastname, profilePhoto, email, password } = req.body;
@@ -42,7 +45,7 @@ const userLogin = async (req, res) => {
   try {
     // Check if email exists
     const userFound = await User.findOne({ email });
-    
+
     if (!userFound) {
       return res.json({
         msg: "Invalid login credentials."
@@ -60,7 +63,13 @@ const userLogin = async (req, res) => {
 
     res.json({
       status: 'Success',
-      data: userFound
+      data: {
+        firstname: userFound.firstname,
+        lastname: userFound.lastname,
+        email: userFound.email,
+        isAdmin: userFound.isAdmin,
+        token: generateToken(userFound._id)
+      }
     })
   } catch (error) {
     res.json(error.message);
@@ -68,10 +77,16 @@ const userLogin = async (req, res) => {
 };
 
 const userProfile = async (req, res) => {
+
+
+  // const { id } = req.params;
   try {
+    // const token = getTokenFromHeader(req);
+    // console.log(token);
+    const user = await User.findById(req.userAuth);
     res.json({
       status: 'Success',
-      data: 'Profile route'
+      data: user
     })
   } catch (error) {
     res.json(error.message);
