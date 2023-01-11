@@ -8,6 +8,8 @@ const postRouter = require('./routes/posts/postRoutes');
 const commentRouter = require('./routes/comments/commentRoutes');
 const categoryRouter = require('./routes/categories/categoryRoutes');
 
+const globalErrorHandler = require('./middlewares/globalErrorHandler');
+
 const app = express();
 
 app.use(express.json())  // pass incoming payload
@@ -21,7 +23,15 @@ app.use('/api/categories/', categoryRouter)
 
 
 // Error Handler
+app.use(globalErrorHandler);
 
+// 404 ERROR
+app.use('*', (req, res,) => {
+  const URL = req.originalUrl;
+  res.status(404).json({
+    message: `Route does not exist.`
+  })
+})
 // Listen to Server
 
 const PORT = process.env.PORT || 9000;

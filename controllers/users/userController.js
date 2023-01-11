@@ -1,27 +1,26 @@
 const bcrypt = require('bcryptjs');
 const User = require('../../model/User/User');
 const generateToken = require('../../utils/generateToken');
+const { appErr, AppErr } = require('../../utils/appErr');
 const getTokenFromHeader = require('../../utils/getTokenFromHeader');
 const isLogin = require('../../middlewares/isLogin');
 
-const userRegister = async (req, res) => {
+const userRegister = async (req, res, next) => {
   const { firstname, lastname, profilePhoto, email, password } = req.body;
-  console.log(password);
+  // console.log(password);
 
   try {
     // Check if email exists
     const userFound = await User.findOne({ email });
 
     if (userFound) {
-      return res.json({
-        msg: 'User already exists.'
-      })
+      return next(new AppErr("User already exists", 500));
     }
 
     // hash password
     const salt = await bcrypt.genSalt(10);
-    console.log('Password: ' + password + ' is type of ' + typeof (password));
-    console.log('SALT: ' + salt + ' is type of ' + typeof (salt));
+    // console.log('Password: ' + password + ' is type of ' + typeof (password));
+    // console.log('SALT: ' + salt + ' is type of ' + typeof (salt));
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create the User
@@ -36,7 +35,8 @@ const userRegister = async (req, res) => {
       data: user
     })
   } catch (error) {
-    res.json(error.message);
+    next(appErr(error.message));
+    // res.json(error.message);
   }
 }
 
